@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     while(iteracoes != 200) {
             // Percorre todos os pixels
             for(int i=0; i<tam; i++) {
-                random = ((rand() * rand()) % tam+1);
+                random = ((rand() * rand()) % tam);
                 // Pixel i - diferença
                 i_i = compara(&pic[SAIDA].pixels[i], &pic[DESEJ].pixels[i]);
                 i_random = compara(&pic[SAIDA].pixels[i], &pic[DESEJ].pixels[random]);
