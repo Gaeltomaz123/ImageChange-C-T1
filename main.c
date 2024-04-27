@@ -14,6 +14,7 @@
 #include <GL/glut.h>
 #endif
 
+#include <math.h>
 // SOIL é a biblioteca para leitura das imagens
 #include "SOIL.h"
 
@@ -39,6 +40,8 @@ int cmp(const void *elem1, const void *elem2);
 void init();
 void draw();
 void keyboard(unsigned char key, int x, int y);
+int compara(RGBpixel * pixel, RGBpixel * pixeldesejado);
+void troca(RGBpixel * pixel1, RGBpixel * pixel2);
 
 // Largura e altura da janela
 int width, height;
@@ -92,7 +95,7 @@ int main(int argc, char *argv[])
     glutInitWindowSize(width, height);
 
     // Cria a janela passando como argumento o titulo da mesma
-    glutCreateWindow("Alquimia Digital");
+    glutCreateWindow("Quebra-Cabeca digital");
 
     // Registra a funcao callback de redesenho da janela de visualizacao
     glutDisplayFunc(draw);
@@ -118,27 +121,41 @@ int main(int argc, char *argv[])
 
     printf("Processando...\n");
 
-    // Copia imagem de destino na imagem de saída
+    // Copia imagem de origem na imagem de saída
     // (NUNCA ALTERAR AS IMAGENS DE ORIGEM E DESEJADA)
-    int tam = pic[DESEJ].width * pic[DESEJ].height;
-    memcpy(pic[SAIDA].pixels, pic[DESEJ].pixels, sizeof(RGBpixel) * tam);
+    int tam = pic[ORIGEM].width * pic[ORIGEM].height;
+    memcpy(pic[SAIDA].pixels, pic[ORIGEM].pixels, sizeof(RGBpixel) * tam);
 
     //
     // Neste ponto, voce deve implementar o algoritmo!
     // (ou chamar funcoes para fazer isso)
     //
     // Aplica o algoritmo e gera a saida em pic[SAIDA].pixels...
-    // ...
-    // ...
-    //
-    // Exemplo de manipulação: inverte as cores na imagem de saída
-    /**/
-    for (int i = 0; i < tam; i++)
-    {
-        pic[SAIDA].pixels[i].r = 255 - pic[SAIDA].pixels[i].r;
-        pic[SAIDA].pixels[i].g = 255 - pic[SAIDA].pixels[i].g;
-        pic[SAIDA].pixels[i].b = 255 - pic[SAIDA].pixels[i].b;
+    // cria as variaveis
+    int random, iteracoes, i_i, i_random, random_i, random_random;
+    // Numero de vezes que percorre todos os pixels, ou seja 200*(tam);
+    while(iteracoes != 200) {
+            // Percorre todos os pixels
+            for(int i=0; i<tam; i++) {
+                random = ((rand() * rand()) % tam+1);
+                // Pixel i - diferença
+                i_i = compara(&pic[SAIDA].pixels[i], &pic[DESEJ].pixels[i]);
+                i_random = compara(&pic[SAIDA].pixels[i], &pic[DESEJ].pixels[random]);
+    
+                // Pixel aleatorio - diferença
+                random_random = compara(&pic[SAIDA].pixels[random], &pic[DESEJ].pixels[random]);
+                random_i = compara(&pic[SAIDA].pixels[random], &pic[DESEJ].pixels[i]);
+
+                // Checagem se vale a pena trocar - troca se diferença entre i saida e i desejada maior que diferença entre i saida e random desejada
+                // e diferença entre random saida e random entrada maior que diferença entre random saida e i desejada 
+                if (i_i > i_random && random_random > random_i) {
+                    troca(&pic[SAIDA].pixels[i], &pic[SAIDA].pixels[random]);
+                }
+            }
+        iteracoes++;
     }
+
+    
     /**/
 
     // NÃO ALTERAR A PARTIR DAQUI!
@@ -150,6 +167,19 @@ int main(int argc, char *argv[])
 
     // Entra no loop de eventos, não retorna
     glutMainLoop();
+}
+
+int compara(RGBpixel * pixel, RGBpixel * pixeldesejado) {
+    // Pega a diferença de r, g e b; e aplica a formula da grayscale, retornando o valor;
+    return (0.299 * abs(pixel -> r - pixeldesejado -> r)) + (0.587 * abs(pixel -> g - pixeldesejado -> g)) + (0.114 * abs(pixel -> b - pixeldesejado -> b));
+}
+
+void troca(RGBpixel * pixel1, RGBpixel * pixel2) {
+    // Troca os valores dos pixels
+    RGBpixel aux;
+    aux = *pixel1;
+    *pixel1 = *pixel2;
+    *pixel2 = aux;
 }
 
 // Carrega uma imagem para a struct Img
